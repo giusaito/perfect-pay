@@ -1,0 +1,30 @@
+// Fonts
+@import url('https://fonts.bunny.net/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+@import 'bootstrap-icons/font/bootstrap-icons';
+
+.form-control {
+    iframe {
+        display: block;
+        width: 100%;
+        padding: 0 !important;
+        font-size: 0.9rem;
+        font-weight: 400;
+        line-height: 1.6;
+        height: 23px !important;
+    }
+}
+#result {
+    display: none;
+}
+#loading-message {
+    display: none;
+    text-align: center;
+    font-weight: 700;
+}
