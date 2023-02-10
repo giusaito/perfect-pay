@@ -16,4 +16,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('pagamento');
 });
-Route::post('/processar-pagamento', 'PaymentController@index')->name('processar-pagamento');
+Route::post('/processar-pagamento-cartao', 'PaymentController@cartao')->name('processar-pagamento');
+Route::post('/processar-pagamento-boleto', 'PaymentController@boleto')->name('processar-pagamento');

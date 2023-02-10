@@ -101,14 +101,101 @@
             </section>
         </div>
         <div class="tab-pane fade" id="nav-ticket" role="tabpanel" aria-labelledby="nav-ticket-tab">
-
+            <section class="payment-form-ticket card mt-4">
+                <div class="payment-ticket card-body">
+                    <div class="block-heading">
+                        <h2>Pagamento com boleto bancário</h2>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img src="{{asset('storage/foto-album.jpg')}}" alt="" class="img-fluid">
+                            <h4 class="mt-4">Valor: <strong class="text-success">R$ 100,00</strong></h4>
+                            <span id="product-description-ticket">Tobias Sammet - Avantasia - The mistery of time</span>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-payment">
+                                <div class="payment-details">
+                                    <form id="form-checkout-ticket" action="/processar-pagamento-boleto" method="post">
+                                        @csrf
+                                        <h3 class="title">Dados pessoais</h3>
+                                        <div class="row">
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-first-name" name="payerFirstName" type="text" placeholder="Nome" class="form-control"/>
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-last-name" name="payerLastName" type="text" placeholder="Sobrenome" class="form-control"/>
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-identification-email" name="email" type="email" placeholder="E-mail" class="form-control" />
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <select id="ticket-identification-type" name="identificationType" class="form-control"><option value="">Tipo de documento</option></select>
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-identification-number" name="identificationNumber" type="text" placeholder="Número do documento" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <h3 class="title">Endereço</h3>
+                                        <div class="row">
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-zip-code" name="payerZipCode" type="text" placeholder="CEP" class="form-control"/>
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-street-name" name="payerStreetName" type="text" placeholder="Rua" class="form-control"/>
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-street-number" name="payerStreetNumber" type="number" placeholder="Número" class="form-control" />
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-neighborhood" name="payerNeightborhood" type="text" placeholder="Bairro" class="form-control" />
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-city" name="payerCity" type="text" placeholder="Cidade" class="form-control" />
+                                            </div>
+                                            <div class="form-group col-sm-8 mb-2">
+                                                <input id="ticket-federal-unit" name="payerFederalUnit" type="text" placeholder="Estado" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-sm-12">
+                                                <input type="hidden" id="amount-ticket" name="amountTicket" value="100" />
+                                                <input type="hidden" id="description-ticket" name="descriptionTicket" value="Tobias Sammet - Avantasia - The mistery of time" />
+                                                <div id="validation-error-messages-ticket" class="mb-4">
+                                                </div>
+                                                <button id="button-pay-ticket" type="submit" class="btn btn-primary btn-block mb-4">Pagar</button>
+                                                <p id="loading-message">Carregando, por favor aguarde...</p>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="fail-response-ticket">
+                    <img src="{{asset('storage/fail.png')}}" class="img-fluid">
+                    <p class="text-center font-weight-bold">Ops! Algo deu errado!</p>
+                    <p id="error-message-ticket" class="text-center"></p>
+                </div>
+                <div id="success-response-ticket">
+                </div>
+            </section>
         </div>
       </div>
 </div>
+@if (\Session::has('success'))
+    <div class="alert alert-success">
+        {!! \Session::get('success') !!}
+    </div>
+@endif
 @endsection
 @section('script')
 <script>
     const mp = new MercadoPago('{{ env('MERCADO_PAGO_PUBLIC_KEY') }}');
+
+    /*
+    Cartão de crédito
+    */
     function loadCardForm() {
         const productCost = document.getElementById('amount').value;
         const productDescription = document.getElementById('product-description').innerText;
@@ -188,7 +275,7 @@
                         identificationType,
                     } = cardForm.getCardFormData();
 
-                    fetch("/processar-pagamento", {
+                    fetch("/processar-pagamento-cartao", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -211,26 +298,26 @@
                             },
                         }),
                     })
-                        .then(response => {
-                            return response.json();
-                        })
-                        .then(result => {
-                            if(!result.hasOwnProperty("error_message")) {
-                                document.getElementById("success-response").style.display = "block";
-                                document.getElementById("payment-id").innerText = result.id;
-                                document.getElementById("payment-status").innerText = result.status;
-                                document.getElementById("payment-detail").innerText = result.detail;
-                            } else {
-                                document.getElementById("error-message").textContent = result.error_message;
-                                document.getElementById("fail-response").style.display = "block";
-                            }
-                            
-                            $('.payment').fadeOut(500);
-                            setTimeout(() => { $('#result').show(500).fadeIn(); }, 500);
-                        })
-                        .catch(error => {
-                            alert("Unexpected error\n"+JSON.stringify(error));
-                        });
+                    .then(response => {
+                        return response.json();
+                    })
+                    .then(result => {
+                        if(!result.hasOwnProperty("error_message")) {
+                            document.getElementById("success-response").style.display = "block";
+                            document.getElementById("payment-id").innerText = result.id;
+                            document.getElementById("payment-status").innerText = result.status;
+                            document.getElementById("payment-detail").innerText = result.detail;
+                        } else {
+                            document.getElementById("error-message").textContent = result.error_message;
+                            document.getElementById("fail-response").style.display = "block";
+                        }
+                        
+                        $('.payment').fadeOut(500);
+                        setTimeout(() => { $('#result').show(500).fadeIn(); }, 500);
+                    })
+                    .catch(error => {
+                        alert("Erro inesperado\n"+JSON.stringify(error));
+                    });
                 },
                 onFetching: (resource) => {
                     console.log("Fetching resource: ", resource);
@@ -291,6 +378,46 @@
     setTimeout(() => {
         loadCardForm();
         $('.payment').show(500).fadeIn();
+    }, 500);
+
+    /*
+    Boleto
+    */
+    function loadTicketForm() {
+        (async function getIdentificationTypes() {
+            try {
+                const identificationTypes = await mp.getIdentificationTypes();
+                const identificationTypeElement = document.getElementById('ticket-identification-type');
+
+                createSelectOptions(identificationTypeElement, identificationTypes);
+            } catch (e) {
+                return console.error('Error getting identificationTypes: ', e);
+            }
+            })();
+
+            function createSelectOptions(elem, options, labelsAndKeys = { label: "name", value: "id" }) {
+            const { label, value } = labelsAndKeys;
+
+            elem.options.length = 0;
+
+            const tempOptions = document.createDocumentFragment();
+
+            options.forEach(option => {
+                const optValue = option[value];
+                const optLabel = option[label];
+
+                const opt = document.createElement('option');
+                opt.value = optValue;
+                opt.textContent = optLabel;
+
+                tempOptions.appendChild(opt);
+            });
+
+            elem.appendChild(tempOptions);
+        }
+    };
+    setTimeout(() => {
+        loadTicketForm();
     }, 500);
 </script>
 @endsection
